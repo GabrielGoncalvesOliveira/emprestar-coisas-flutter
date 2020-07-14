@@ -6,6 +6,7 @@ import 'package:emprestar_coisas/models/stuff.dart';
 import 'package:emprestar_coisas/pages/stuff_detail_page.dart';
 import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -15,6 +16,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final _controller = HomeController();
   bool _loading = true;
+  final GlobalKey<AnimatedListState> _key = GlobalKey();
 
   @override
   void initState(){
@@ -45,30 +47,53 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  _buildItem(index){
+    final stuff = _controller.stuffList[index];
+    return StuffCard(
+      stuff: stuff,
+      onTelephoned: (){
+        _telephonedStuff(stuff);
+      },
+      onDelete: () {
+        _deleteStuff(stuff, index);
+      },
+      onEdit: () {
+        _editStuff(index, stuff);
+      },
+    );
+  }
+
   _buildStuffList(){
     if(_loading){
-      return CenteredCircularProggres();;
+      return CenteredCircularProggres();
     }
 
     if(_controller.stuffList.isEmpty){
       return CenteredMessage(message: 'Vazio', icon: Icons.warning);
     }
 
-    return ListView.builder(
-      itemCount: _controller.stuffList.length,
-      itemBuilder: (context, index) {
-        final stuff = _controller.stuffList[index];
-        return StuffCard(
-          stuff: stuff,
-          onDelete: () {
-            _deleteStuff(stuff);
-          },
-          onEdit: () {
-            _editStuff(index, stuff);
-          },
-        );
+     return AnimatedList(
+      key: _key,
+      initialItemCount: _controller.stuffList.length,
+      itemBuilder: (context, index, animation) {
+        return _buildItem(index);
       },
     );
+    // return ListView.builder(
+    //   itemCount: _controller.stuffList.length,
+    //   itemBuilder: (context, index) {
+    //     final stuff = _controller.stuffList[index];
+    //     return StuffCard(
+    //       stuff: stuff,
+    //       onDelete: () {
+    //         _deleteStuff(stuff);
+    //       },
+    //       onEdit: () {
+    //         _editStuff(index, stuff);
+    //       },
+    //     );
+    //   },
+    // );
   }
 
     _addStuff() async {
@@ -115,11 +140,41 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  _deleteStuff(Stuff stuff) {
+  _telephonedStuff(Stuff stuff){
+    try{
+      _launchURL(stuff.telephone);
+    }catch(e){
+      Flushbar(
+        title: e,
+        backgroundColor: Colors.red,
+        message:
+            "Tente novamente mais tarde",
+        duration: Duration(seconds: 2),
+      )..show(context);
+    }
+  }
+
+    _launchURL(String telefoneEnviar) async {
+    String url = 'tel:$telefoneEnviar';
+
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Não foi possível telefonar para $url';
+    }
+  }
+
+  _deleteStuff(Stuff stuff, int index) {
     print('Delete stuff');
     setState(() {
       _controller.delete(stuff);
     });
+
+    AnimatedListRemovedItemBuilder builder = (context, animation){
+        return _buildItem(index);
+    };
+
+    _key.currentState.removeItem(index, builder);
 
     Flushbar(
       title: "Exclusão",

@@ -31,9 +31,9 @@ class MyApp extends StatelessWidget {
   _buildTheme(){
     return ThemeData(
       brightness: Brightness.dark,
-      primaryColor: Color(0xFF212121),
-      accentColor: Colors.deepOrange,
-      primarySwatch: Colors.deepOrange
+      primaryColor: Colors.deepPurple,
+      accentColor: Colors.deepPurple,
+      primarySwatch: Colors.deepPurple
     );
   }
 }

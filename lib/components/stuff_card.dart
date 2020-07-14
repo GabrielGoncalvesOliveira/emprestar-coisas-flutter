@@ -7,12 +7,14 @@ class StuffCard extends StatelessWidget {
   final Stuff stuff;
   final Function onEdit;
   final Function onDelete;
+  final Function onTelephoned;
 
   StuffCard({
     Key key,
     this.onDelete,
     this.onEdit,
     this.stuff,
+    this.onTelephoned
   }) : super(key: key);
 
   @override
@@ -43,6 +45,12 @@ class StuffCard extends StatelessWidget {
       actionExtentRatio: 0.25,
       child: _buildStuffCard(stuff),
       actions: <Widget>[
+        IconSlideAction(
+          caption: 'Telefonar',
+          color: Colors.greenAccent,
+          icon: Icons.network_cell,
+          onTap: onTelephoned,
+        ),
         IconSlideAction(
           caption: 'Editar',
           color: Colors.blue,

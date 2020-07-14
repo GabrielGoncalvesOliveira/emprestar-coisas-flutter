@@ -1,10 +1,12 @@
 import 'package:emprestar_coisas/helpers/validator.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:emprestar_coisas/components/back_dialog.dart';
 import 'package:emprestar_coisas/components/photo_container.dart';
 import 'package:emprestar_coisas/models/stuff.dart';
+import 'package:brasil_fields/brasil_fields.dart';
 
 class StuffDetailPage extends StatefulWidget {
   final Stuff editedStuff;
@@ -24,6 +26,7 @@ class _StuffDetailPageState extends State<StuffDetailPage> {
   final _descriptionController = TextEditingController();
   final _nameController = TextEditingController();
   final _dateFormat = DateFormat('dd/MM/yyyy');
+  final _telephoneController = TextEditingController();
 
   var _currentStuff = Stuff();
 
@@ -35,6 +38,7 @@ class _StuffDetailPageState extends State<StuffDetailPage> {
       _dateController.text = _dateFormat.format(_currentStuff.loanDate);
       _descriptionController.text = _currentStuff.description;
       _nameController.text = _currentStuff.contactName;
+      _telephoneController.text = _currentStuff.telephone;
     }
   }
 
@@ -43,6 +47,7 @@ class _StuffDetailPageState extends State<StuffDetailPage> {
     _dateController.clear();
     _descriptionController.clear();
     _nameController.clear();
+    _telephoneController.clear();
     super.dispose();
   }
 
@@ -95,6 +100,28 @@ class _StuffDetailPageState extends State<StuffDetailPage> {
     );
   }
 
+  _buildTelephoneField(){
+    return TextFormField(
+      decoration: InputDecoration(
+        icon: Icon(Icons.signal_cellular_4_bar),
+        labelText: 'Telefone',
+      ),
+      onSaved: (value) {
+        setState(() {
+          _currentStuff.telephone = value;
+        });
+      },
+      inputFormatters: [
+        WhitelistingTextInputFormatter.digitsOnly,
+        TelefoneInputFormatter(),
+      ],
+      controller: _telephoneController,
+      validator: (value) {
+        return Validator.isTelephoneWithCorretNumberGaranted(value);
+      },
+    );
+  }
+
   _buildDateInputField() {
     return DateTimeField(
       decoration: InputDecoration(
@@ -116,7 +143,7 @@ class _StuffDetailPageState extends State<StuffDetailPage> {
         _currentStuff.loanDate = date;
       },
       validator: (date) {
-        return Validator.isEmptyDate(date);
+        return Validator.isDateLowerThanToday(date);
       },
     );
   }
